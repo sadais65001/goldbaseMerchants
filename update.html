@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Update Rates - Goldbase</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="card update-card">
+  <div class="topbar">
+    <div>
+      <h1 id="shopName">Loading...</h1>
+      <p class="subtitle" id="shopSubtitle">Update your product prices</p>
+    </div>
+    <button class="logout" id="logoutBtn">Logout</button>
+  </div>
+
+  <div id="loader" class="loader">Loading products...</div>
+
+  <div id="productsWrap" style="display:none;">
+    <div class="col-header">
+      <div class="product-name"></div>
+      <div class="field-label">Buy</div>
+      <div class="field-label">Sell</div>
+    </div>
+    <div id="productsList"></div>
+
+    <button id="saveBtn">Save Prices</button>
+    <div class="error" id="errorMsg"></div>
+    <div class="success" id="successMsg"></div>
+  </div>
+</div>
+
+<!-- Verification Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Confirm Update</h2>
+    <p>Apna verification code daalein taa ke prices update ho sakein.</p>
+    <label for="verifyCode">Verification Code</label>
+    <input type="text" id="verifyCode" autocomplete="off" />
+    <div class="error" id="modalError"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="modalCancel">Cancel</button>
+      <button id="modalConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebase-config.js"></script>
+<script src="update.js"></script>
+</body>
+</html>

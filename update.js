@@ -1,0 +1,156 @@
+const shopNameEl = document.getElementById("shopName");
+const shopSubtitleEl = document.getElementById("shopSubtitle");
+const loaderEl = document.getElementById("loader");
+const productsWrap = document.getElementById("productsWrap");
+const productsList = document.getElementById("productsList");
+const saveBtn = document.getElementById("saveBtn");
+const errorMsg = document.getElementById("errorMsg");
+const successMsg = document.getElementById("successMsg");
+const logoutBtn = document.getElementById("logoutBtn");
+
+const modalOverlay = document.getElementById("modalOverlay");
+const verifyCode = document.getElementById("verifyCode");
+const modalError = document.getElementById("modalError");
+const modalConfirm = document.getElementById("modalConfirm");
+const modalCancel = document.getElementById("modalCancel");
+
+let merchantId = sessionStorage.getItem("merchantId");
+let productsCache = []; // [{id, name, priceBuy, priceSell}]
+
+if (!merchantId) {
+  window.location.href = "index.html";
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    sessionStorage.removeItem("merchantId");
+    window.location.href = "index.html";
+    return;
+  }
+  await loadMerchantAndProducts();
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await auth.signOut();
+  sessionStorage.removeItem("merchantId");
+  window.location.href = "index.html";
+});
+
+async function loadMerchantAndProducts() {
+  try {
+    const merchantDoc = await db.collection("merchants").doc(merchantId).get();
+    if (!merchantDoc.exists) {
+      shopNameEl.textContent = "Merchant not found";
+      return;
+    }
+    const data = merchantDoc.data();
+    shopNameEl.textContent = data.shopName || "Your Shop";
+    shopSubtitleEl.textContent = data.city ? `${data.city} — Update your product prices` : "Update your product prices";
+
+    const productsSnap = await db.collection("merchants").doc(merchantId).collection("products").get();
+    productsCache = productsSnap.docs.map((doc) => ({
+      id: doc.id,
+      name: doc.data().name || doc.id,
+      priceBuy: doc.data().priceBuy ?? 0,
+      priceSell: doc.data().priceSell ?? 0,
+    }));
+
+    renderProducts();
+    loaderEl.style.display = "none";
+    productsWrap.style.display = "block";
+  } catch (err) {
+    loaderEl.textContent = "Products load nahi ho saka. Page reload karein.";
+    console.error(err);
+  }
+}
+
+function renderProducts() {
+  productsList.innerHTML = "";
+  productsCache.forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "product-row";
+    row.innerHTML = `
+      <div class="product-name">${escapeHtml(p.name)}</div>
+      <input type="number" step="0.01" inputmode="decimal" value="${p.priceBuy}" data-id="${p.id}" data-field="priceBuy" />
+      <input type="number" step="0.01" inputmode="decimal" value="${p.priceSell}" data-id="${p.id}" data-field="priceSell" />
+    `;
+    productsList.appendChild(row);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+saveBtn.addEventListener("click", () => {
+  errorMsg.textContent = "";
+  successMsg.textContent = "";
+  modalError.textContent = "";
+  verifyCode.value = "";
+  modalOverlay.classList.add("open");
+});
+
+modalCancel.addEventListener("click", () => {
+  modalOverlay.classList.remove("open");
+});
+
+modalConfirm.addEventListener("click", async () => {
+  const code = verifyCode.value.trim();
+  if (!code) {
+    modalError.textContent = "Verification code daalein.";
+    return;
+  }
+
+  modalConfirm.disabled = true;
+  modalConfirm.textContent = "Saving...";
+
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      window.location.href = "index.html";
+      return;
+    }
+    const idToken = await user.getIdToken();
+
+    const inputs = productsList.querySelectorAll("input");
+    const updates = {};
+    inputs.forEach((input) => {
+      const id = input.dataset.id;
+      const field = input.dataset.field;
+      if (!updates[id]) updates[id] = { id };
+      updates[id][field] = parseFloat(input.value);
+    });
+    const productsPayload = Object.values(updates);
+
+    const res = await fetch(`${BACKEND_URL}/merchant/update-prices`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        idToken,
+        priceUpdateKey: code,
+        products: productsPayload,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || result.status !== "success") {
+      modalError.textContent = result.message || "Update fail ho gaya.";
+      modalConfirm.disabled = false;
+      modalConfirm.textContent = "Confirm";
+      return;
+    }
+
+    modalOverlay.classList.remove("open");
+    successMsg.textContent = "Prices update ho gaye!";
+    modalConfirm.disabled = false;
+    modalConfirm.textContent = "Confirm";
+  } catch (err) {
+    modalError.textContent = "Network error, dobara koshish karein.";
+    modalConfirm.disabled = false;
+    modalConfirm.textContent = "Confirm";
+    console.error(err);
+  }
+});
