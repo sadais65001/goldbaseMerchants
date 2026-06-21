@@ -210,3 +210,44 @@ button:disabled {
   border: 1px solid #353a45;
   color: #b5bac4;
 }
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #e3e3e3;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: #353a45;
+}
+
+.product-card-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.price-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.price-field label {
+  font-size: 13px;
+  color: #777;
+}
+
+.price-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px; /* iOS pe focus karte waqt auto-zoom rokta hai */
+}
+
+.price-field input:focus {
+  outline: none;
+  border-color: #c9a227;
+}

@@ -50,7 +50,7 @@ async function loadMerchantAndProducts() {
     const productsSnap = await db.collection("merchants").doc(merchantId).collection("products").get();
     productsCache = productsSnap.docs.map((doc) => ({
       id: doc.id,
-      name: doc.data().name || doc.id,
+      name: doc.data().name || "Unnamed Product",
       priceBuy: doc.data().priceBuy ?? 0,
       priceSell: doc.data().priceSell ?? 0,
     }));
@@ -67,14 +67,20 @@ async function loadMerchantAndProducts() {
 function renderProducts() {
   productsList.innerHTML = "";
   productsCache.forEach((p) => {
-    const row = document.createElement("div");
-    row.className = "product-row";
-    row.innerHTML = `
-      <div class="product-name">${escapeHtml(p.name)}</div>
-      <input type="number" step="0.01" inputmode="decimal" value="${p.priceBuy}" data-id="${p.id}" data-field="priceBuy" />
-      <input type="number" step="0.01" inputmode="decimal" value="${p.priceSell}" data-id="${p.id}" data-field="priceSell" />
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <div class="product-card-name">${escapeHtml(p.name)}</div>
+      <div class="price-field">
+        <label>Buy Price</label>
+        <input type="text" inputmode="decimal" value="${p.priceBuy}" data-id="${p.id}" data-field="priceBuy" placeholder="e.g. PKR 123000" />
+      </div>
+      <div class="price-field">
+        <label>Sell Price</label>
+        <input type="text" inputmode="decimal" value="${p.priceSell}" data-id="${p.id}" data-field="priceSell" placeholder="e.g. PKR 125000" />
+      </div>
     `;
-    productsList.appendChild(row);
+    productsList.appendChild(card);
   });
 }
 
@@ -82,6 +88,16 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+// "PKR 123,000", "Rs. 5000", "1234.50" — kisi bhi format se number nikal leta hai
+function parsePriceInput(value) {
+  if (value == null) return null;
+  const match = String(value).trim().match(/[\d][\d,]*\.?\d*/);
+  if (!match) return null;
+  const cleaned = match[0].replace(/,/g, "");
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? null : parsed;
 }
 
 saveBtn.addEventListener("click", () => {
@@ -103,6 +119,23 @@ modalConfirm.addEventListener("click", async () => {
     return;
   }
 
+  const inputs = productsList.querySelectorAll("input");
+  const updates = {};
+  let hasInvalid = false;
+  inputs.forEach((input) => {
+    const id = input.dataset.id;
+    const field = input.dataset.field;
+    if (!updates[id]) updates[id] = { id };
+    const parsed = parsePriceInput(input.value);
+    if (parsed === null) hasInvalid = true;
+    updates[id][field] = parsed;
+  });
+
+  if (hasInvalid) {
+    modalError.textContent = "Kuch prices samajh nahi aaye — sirf number wala hissa likhein (e.g. PKR 123000).";
+    return;
+  }
+
   modalConfirm.disabled = true;
   modalConfirm.textContent = "Saving...";
 
@@ -113,15 +146,6 @@ modalConfirm.addEventListener("click", async () => {
       return;
     }
     const idToken = await user.getIdToken();
-
-    const inputs = productsList.querySelectorAll("input");
-    const updates = {};
-    inputs.forEach((input) => {
-      const id = input.dataset.id;
-      const field = input.dataset.field;
-      if (!updates[id]) updates[id] = { id };
-      updates[id][field] = parseFloat(input.value);
-    });
     const productsPayload = Object.values(updates);
 
     const res = await fetch(`${BACKEND_URL}/merchant/update-prices`, {
@@ -147,6 +171,11 @@ modalConfirm.addEventListener("click", async () => {
     successMsg.textContent = "Prices update ho gaye!";
     modalConfirm.disabled = false;
     modalConfirm.textContent = "Confirm";
+
+    productsCache = productsCache.map((p) => {
+      const u = updates[p.id];
+      return u ? { ...p, priceBuy: u.priceBuy, priceSell: u.priceSell } : p;
+    });
   } catch (err) {
     modalError.textContent = "Network error, dobara koshish karein.";
     modalConfirm.disabled = false;
