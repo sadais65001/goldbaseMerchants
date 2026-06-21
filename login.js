@@ -2,9 +2,15 @@ const loginForm = document.getElementById("loginForm");
 const errorMsg = document.getElementById("errorMsg");
 const loginBtn = document.getElementById("loginBtn");
 
+// Login session browser band/restart hone ke baad bhi yaad rahe
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
 // Agar already logged in hai, seedha update page pe bhej do
-auth.onAuthStateChanged((user) => {
-  if (user && sessionStorage.getItem("merchantId")) {
+auth.onAuthStateChanged(async (user) => {
+  if (!user) return;
+
+  const userDoc = await db.collection("merchantUsers").doc(user.uid).get();
+  if (userDoc.exists && userDoc.data().merchantId) {
     window.location.href = "update.html";
   }
 });
@@ -40,7 +46,6 @@ loginForm.addEventListener("submit", async (e) => {
       return;
     }
 
-    sessionStorage.setItem("merchantId", merchantId);
     window.location.href = "update.html";
   } catch (err) {
     let msg = "Login fail ho gaya, dobara koshish karein.";

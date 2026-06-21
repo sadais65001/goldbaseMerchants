@@ -14,25 +14,28 @@ const modalError = document.getElementById("modalError");
 const modalConfirm = document.getElementById("modalConfirm");
 const modalCancel = document.getElementById("modalCancel");
 
-let merchantId = sessionStorage.getItem("merchantId");
+let merchantId = null;
 let productsCache = []; // [{id, name, priceBuy, priceSell}]
-
-if (!merchantId) {
-  window.location.href = "index.html";
-}
 
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
-    sessionStorage.removeItem("merchantId");
     window.location.href = "index.html";
     return;
   }
+
+  const userDoc = await db.collection("merchantUsers").doc(user.uid).get();
+  if (!userDoc.exists || !userDoc.data().merchantId) {
+    await auth.signOut();
+    window.location.href = "index.html";
+    return;
+  }
+
+  merchantId = userDoc.data().merchantId;
   await loadMerchantAndProducts();
 });
 
 logoutBtn.addEventListener("click", async () => {
   await auth.signOut();
-  sessionStorage.removeItem("merchantId");
   window.location.href = "index.html";
 });
 
@@ -90,7 +93,6 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// "PKR 123,000", "Rs. 5000", "1234.50" — kisi bhi format se number nikal leta hai
 function parsePriceInput(value) {
   if (value == null) return null;
   const match = String(value).trim().match(/[\d][\d,]*\.?\d*/);
