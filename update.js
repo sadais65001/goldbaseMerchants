@@ -76,11 +76,11 @@ function renderProducts() {
       <div class="product-card-name">${escapeHtml(p.name)}</div>
       <div class="price-field">
         <label>Buy Price</label>
-        <input type="text" inputmode="decimal" value="${p.priceBuy}" data-id="${p.id}" data-field="priceBuy" placeholder="e.g. PKR 123000" />
+        <input type="text" value="${p.priceBuy}" data-id="${p.id}" data-field="priceBuy" placeholder="e.g. PKR 123000" />
       </div>
       <div class="price-field">
         <label>Sell Price</label>
-        <input type="text" inputmode="decimal" value="${p.priceSell}" data-id="${p.id}" data-field="priceSell" placeholder="e.g. PKR 125000" />
+        <input type="text" value="${p.priceSell}" data-id="${p.id}" data-field="priceSell" placeholder="e.g. PKR 125000" />
       </div>
     `;
     productsList.appendChild(card);
