@@ -117,23 +117,6 @@ modalConfirm.addEventListener("click", async () => {
     return;
   }
 
-  const inputs = productsList.querySelectorAll("input");
-  const updates = {};
-  let hasInvalid = false;
-  inputs.forEach((input) => {
-    const id = input.dataset.id;
-    const field = input.dataset.field;
-    if (!updates[id]) updates[id] = { id };
-    const parsed = parsePriceInput(input.value);
-    if (parsed === null) hasInvalid = true;
-    updates[id][field] = parsed;
-  });
-
-  if (hasInvalid) {
-    modalError.textContent = "Kuch prices samajh nahi aaye — sirf number wala hissa likhein (e.g. PKR 123000).";
-    return;
-  }
-
   modalConfirm.disabled = true;
   modalConfirm.textContent = "Saving...";
 
