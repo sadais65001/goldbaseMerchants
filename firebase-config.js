@@ -1,12 +1,12 @@
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDYnwz3uUsdNdLnT7Rn-Upj1qbNM2gZjwI",
-  authDomain: "goldbase-f0575.firebaseapp.com",
-  databaseURL: "https://goldbase-f0575-default-rtdb.firebaseio.com",
-  projectId: "goldbase-f0575",
-  storageBucket: "goldbase-f0575.firebasestorage.app",
-  messagingSenderId: "664830660899",
-  appId: "1:664830660899:web:e05945d2667c4258053c96",
-  measurementId: "G-YP9QHV3CWD"
+  apiKey: "AIzaSyBAGECl7XmgpLwL8WTc4Y00rMGw4eMZNs8",
+  authDomain: "sudaisasia-goldbase.firebaseapp.com",
+  projectId: "sudaisasia-goldbase",
+  storageBucket: "sudaisasia-goldbase.firebasestorage.app",
+  messagingSenderId: "760849486667",
+  appId: "1:760849486667:web:d7a63e4d53fd18edd68ece",
+  measurementId: "G-G8S7QH2HJT"
 };
 
 firebase.initializeApp(firebaseConfig);
