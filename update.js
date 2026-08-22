@@ -95,11 +95,7 @@ function escapeHtml(str) {
 
 function parsePriceInput(value) {
   if (value == null) return null;
-  const match = String(value).trim().match(/[\d][\d,]*\.?\d*/);
-  if (!match) return null;
-  const cleaned = match[0].replace(/,/g, "");
-  const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? null : parsed;
+  return String(value).trim();
 }
 
 saveBtn.addEventListener("click", () => {
