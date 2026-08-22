@@ -117,6 +117,15 @@ modalConfirm.addEventListener("click", async () => {
     return;
   }
 
+  const inputs = productsList.querySelectorAll("input");
+  const updates = {};
+  inputs.forEach((input) => {
+    const id = input.dataset.id;
+    const field = input.dataset.field;
+    if (!updates[id]) updates[id] = { id };
+    updates[id][field] = parsePriceInput(input.value);
+  });
+
   modalConfirm.disabled = true;
   modalConfirm.textContent = "Saving...";
 
