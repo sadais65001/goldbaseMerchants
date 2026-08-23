@@ -12,6 +12,7 @@ const modalOverlay = document.getElementById("modalOverlay");
 const verifyCode = document.getElementById("verifyCode");
 const modalError = document.getElementById("modalError");
 const modalConfirm = document.getElementById("modalConfirm");
+const modalConfirmShare = document.getElementById("modalConfirmShare");
 const modalCancel = document.getElementById("modalCancel");
 
 let merchantId = null;
@@ -110,7 +111,10 @@ modalCancel.addEventListener("click", () => {
   modalOverlay.classList.remove("open");
 });
 
-modalConfirm.addEventListener("click", async () => {
+modalConfirm.addEventListener("click", () => submitUpdate(false, modalConfirm, "Confirm"));
+modalConfirmShare.addEventListener("click", () => submitUpdate(true, modalConfirmShare, "Update & Share"));
+
+async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
   const code = verifyCode.value.trim();
   if (!code) {
     modalError.textContent = "Verification code daalein.";
@@ -127,7 +131,8 @@ modalConfirm.addEventListener("click", async () => {
   });
 
   modalConfirm.disabled = true;
-  modalConfirm.textContent = "Saving...";
+  modalConfirmShare.disabled = true;
+  triggerBtn.textContent = "Saving...";
 
   try {
     const user = auth.currentUser;
@@ -153,23 +158,50 @@ modalConfirm.addEventListener("click", async () => {
     if (!res.ok || result.status !== "success") {
       modalError.textContent = result.message || "Update fail ho gaya.";
       modalConfirm.disabled = false;
-      modalConfirm.textContent = "Confirm";
+      modalConfirmShare.disabled = false;
+      triggerBtn.textContent = originalLabel;
       return;
     }
 
     modalOverlay.classList.remove("open");
     successMsg.textContent = "Prices update ho gaye!";
     modalConfirm.disabled = false;
-    modalConfirm.textContent = "Confirm";
+    modalConfirmShare.disabled = false;
+    triggerBtn.textContent = originalLabel;
 
     productsCache = productsCache.map((p) => {
       const u = updates[p.id];
       return u ? { ...p, priceBuy: u.priceBuy, priceSell: u.priceSell } : p;
     });
+
+    if (shouldShare) {
+      shareUpdatedPrices();
+    }
   } catch (err) {
     modalError.textContent = "Network error, dobara koshish karein.";
     modalConfirm.disabled = false;
-    modalConfirm.textContent = "Confirm";
+    modalConfirmShare.disabled = false;
+    triggerBtn.textContent = originalLabel;
     console.error(err);
   }
-});
+}
+
+function shareUpdatedPrices() {
+  const shopName = shopNameEl.textContent;
+  let text = `${shopName} - Updated Rates\n\n`;
+
+  productsCache.forEach((p) => {
+    text += `${p.name}\nBuy: ${p.priceBuy}   Sell: ${p.priceSell}\n\n`;
+  });
+
+  if (navigator.share) {
+    navigator.share({
+      title: `${shopName} - Rate Update`,
+      text: text,
+    }).catch((err) => console.log("Share cancelled or failed:", err));
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Share is browser mein support nahi hai — rates clipboard mein copy kar diye gaye hain.");
+    });
+  }
+}
