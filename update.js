@@ -175,7 +175,11 @@ async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
     });
 
     if (shouldShare) {
-      shareUpdatedPrices();
+      pendingShareText = buildShareText(); // text taiyar karo
+      successMsg.innerHTML = 'Prices update ho gaye! <button id="shareNowBtn" style="margin-left:8px;">Share Now</button>';
+      document.getElementById("shareNowBtn").addEventListener("click", () => {
+        shareUpdatedPrices(pendingShareText);
+      }, { once: true });
     }
   } catch (err) {
     modalError.textContent = "Network error, dobara koshish karein.";
@@ -185,20 +189,21 @@ async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
     console.error(err);
   }
 }
+let pendingShareText = "";
 
-function shareUpdatedPrices() {
+function buildShareText() {
   const shopName = shopNameEl.textContent;
   let text = `${shopName} - Updated Rates\n\n`;
-
   productsCache.forEach((p) => {
     text += `${p.name}\nBuy: ${p.priceBuy}   Sell: ${p.priceSell}\n\n`;
   });
+  return text;
+}
 
+function shareUpdatedPrices(text) {
+  const shopName = shopNameEl.textContent;
   if (navigator.share) {
-    navigator.share({
-      title: `${shopName} - Rate Update`,
-      text: text,
-    }).catch((err) => console.log("Share cancelled or failed:", err));
+    navigator.share({ title: `${shopName} - Rate Update`, text }).catch((err) => console.log("Share cancelled or failed:", err));
   } else {
     navigator.clipboard.writeText(text).then(() => {
       alert("Share is browser mein support nahi hai — rates clipboard mein copy kar diye gaye hain.");
