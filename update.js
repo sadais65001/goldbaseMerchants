@@ -197,6 +197,7 @@ function buildShareText() {
   productsCache.forEach((p) => {
     text += `${p.name}\nBuy: ${p.priceBuy}   Sell: ${p.priceSell}\n\n`;
   });
+  text += "\n\nDownload GoldBase: https://play.google.com/store/apps/details?id=com.cxn.gcalc";
   return text;
 }
 
