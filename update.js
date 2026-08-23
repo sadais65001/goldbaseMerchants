@@ -201,7 +201,7 @@ let pendingShareText = "";
 
 function buildShareText() {
   const shopName = shopNameEl.textContent;
-  let text = `${shopName} - Updated Rates\n\n`;
+  let text = `${shopName}\n\n`;
   productsCache.forEach((p) => {
     text += `${p.name}\nBuy: ${p.priceBuy}   Sell: ${p.priceSell}\n\n`;
   });
