@@ -15,6 +15,9 @@ const modalConfirm = document.getElementById("modalConfirm");
 const modalConfirmShare = document.getElementById("modalConfirmShare");
 const modalCancel = document.getElementById("modalCancel");
 
+const shareLatestBtn = document.getElementById("shareLatestBtn");
+let latestShareText = "";
+
 let merchantId = null;
 let productsCache = []; // [{id, name, priceBuy, priceSell}]
 
@@ -107,6 +110,11 @@ saveBtn.addEventListener("click", () => {
   modalOverlay.classList.add("open");
 });
 
+shareLatestBtn.addEventListener("click", () => {
+  if (!latestShareText) return;
+  shareUpdatedPrices(latestShareText);
+});
+
 modalCancel.addEventListener("click", () => {
   modalOverlay.classList.remove("open");
 });
@@ -174,12 +182,12 @@ async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
       return u ? { ...p, priceBuy: u.priceBuy, priceSell: u.priceSell } : p;
     });
 
+    // Latest text hamesha refresh, har successful update pe
+    latestShareText = buildShareText();
+    shareLatestBtn.style.display = "inline-block";
+
     if (shouldShare) {
-      pendingShareText = buildShareText(); // text taiyar karo
-      successMsg.innerHTML = 'Prices update ho gaye! <button id="shareNowBtn" style="margin-left:8px;">Share Now</button>';
-      document.getElementById("shareNowBtn").addEventListener("click", () => {
-        shareUpdatedPrices(pendingShareText);
-      }, { once: true });
+      shareUpdatedPrices(latestShareText);
     }
   } catch (err) {
     modalError.textContent = "Network error, dobara koshish karein.";
@@ -197,7 +205,7 @@ function buildShareText() {
   productsCache.forEach((p) => {
     text += `${p.name}\nBuy: ${p.priceBuy}   Sell: ${p.priceSell}\n\n`;
   });
-  text += "\n\nDownload GoldBase: https://play.google.com/store/apps/details?id=com.cxn.gcalc";
+  text += '📲 Download GoldBase: https://play.google.com/store/apps/details?id=com.cxn.gcalc';
   return text;
 }
 
