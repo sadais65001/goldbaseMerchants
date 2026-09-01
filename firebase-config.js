@@ -10,6 +10,11 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+const appCheck = firebase.appCheck();
+appCheck.activate(
+  new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfjjqMtAAAAAKSFhar25AgHayhIl9ueqrWb-zRI'),
+  true
+);
 const auth = firebase.auth();
 const db = firebase.firestore();
 

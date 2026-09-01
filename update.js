@@ -151,9 +151,14 @@ async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
     const idToken = await user.getIdToken();
     const productsPayload = Object.values(updates);
 
+    const { token: appCheckToken } = await firebase.appCheck().getToken(false);
+
     const res = await fetch(`${BACKEND_URL}/merchant/update-prices`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Firebase-AppCheck": appCheckToken,
+      },
       body: JSON.stringify({
         idToken,
         priceUpdateKey: code,
