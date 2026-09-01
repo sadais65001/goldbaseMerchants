@@ -195,7 +195,7 @@ async function submitUpdate(shouldShare, triggerBtn, originalLabel) {
       shareUpdatedPrices(latestShareText);
     }
   } catch (err) {
-    modalError.textContent = err.text || "Update fail ho gaya.";
+    modalError.textContent = "Network error, dobara koshish karein.";
     modalConfirm.disabled = false;
     modalConfirmShare.disabled = false;
     triggerBtn.textContent = originalLabel;
